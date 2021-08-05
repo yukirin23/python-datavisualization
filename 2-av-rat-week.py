@@ -1,21 +1,24 @@
+from ssl import Options
 import justpy as jp
 import pandas
 from datetime import datetime
 from pytz import UTC
-
+import matplotlib.pyplot as plt
 
 data = pandas.read_csv("data/reviews.csv", parse_dates=['Timestamp'])
-data['Day'] = data['Timestamp'].dt.date
-day_average = data.groupby(['Day']).mean()
+data['week'] = data['Timestamp'].dt.strftime('%Y-%U')
+week_average = data.groupby(['week']).mean()
+
 
 chart_def = """
+
 {
     chart: {
         type: 'spline',
         inverted: false
     },
     title: {
-        text: 'Average Rating by Date'
+        text: 'Average Rating by Week'
     },
     subtitle: {
         text: ''
@@ -67,6 +70,7 @@ chart_def = """
             [50, -2.5], [60, -27.7], [70, -55.7], [80, -76.5]]
     }]
 }
+
 """
 
 
@@ -76,12 +80,11 @@ def app():
                  classes="text-h3 text-center q-pa-md")
     p1 = jp.QDiv(a=wp, text="These graphs represent course review",
                  classes="text-center q-pa-md")
+
     hc = jp.HighCharts(a=wp, options=chart_def)
-    hc.options.title.text = "Average Rating by Day"
 
-    hc.options.xAxis.categories = list(day_average.index)
-    hc.options.series[0].data = list(day_average['Rating'])
-
+    hc.options.xAxis.categories = list(week_average.index)
+    hc.options.series[0].data = list(week_average['Rating'])
     return wp
 
 
